@@ -241,6 +241,31 @@ defmodule TMI do
   end
 
   @doc """
+  Parse a CMD in order to pull out metadata about the message.
+
+  ## Example:
+
+      iex> parse_cmd("@badge-info=;badges=;client-nonce=d0f8de40ec67d311a42f1fc427ea8040;color=;display-name=beetle_bass;emotes=;first-msg=0;flags=;id=68a888f2-001f-48d8-92d0-986ee293c6d2;mod=0;returning-chatter=0;room-id=427632467;subscriber=0;tmi-sent-ts=1713127181828;turbo=0;user-id=137651273;user-type=")
+      %{message_id: "68a888f2-001f-48d8-92d0-986ee293c6d2", user_id: "137651273"}
+
+  """
+  def parse_cmd(cmd) do
+    message_id =
+      if String.contains?(cmd, "id=") do
+        [_, message_id] = Regex.run(~r/id=(.*?);/, cmd)
+        message_id
+      end
+
+    user_id =
+      if String.contains?(cmd, "user-id=") do
+        [_, user_id] = Regex.run(~r/user-id=(.*?);/, cmd)
+        user_id
+      end
+
+    %{message_id: message_id, user_id: user_id}
+  end
+
+  @doc """
   Parse a WHISPER message.
 
   ## Example:
@@ -296,7 +321,15 @@ defmodule TMI do
             apply(bot, :handle_action, [message, sender, channel, parse_tags(tags)])
 
           message ->
-            apply(bot, :handle_message, [message, sender, channel, parse_tags(tags)])
+            %{message_id: message_id, user_id: sender_id} = parse_cmd(cmd)
+
+            apply(bot, :handle_message, [%{
+              text: message,
+              id: message_id
+            }, %{
+              name: sender,
+              id: sender_id
+            }, channel, parse_tags(tags)])
         end
 
       String.contains?(arg, "WHISPER") ->
