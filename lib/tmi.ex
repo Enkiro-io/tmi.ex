@@ -310,7 +310,7 @@ defmodule TMI do
 
   @doc false
   # TODO: Add more cases.
-  def apply_incoming_to_bot({:unrecognized, tags, %ExIRC.Message{args: [arg]}} = msg, bot) do
+  def apply_incoming_to_bot({:unrecognized, tags, %ExIRC.Message{cmd: cmd, args: [arg]}} = msg, bot) do
     cond do
       String.contains?(arg, "PRIVMSG") ->
         {message, sender, channel} = parse_message(arg)
