@@ -252,36 +252,37 @@ defmodule TMI do
 
   """
   def parse_cmd(cmd) do
-    message_id =
-      if String.contains?(cmd, "id=") do
-        [_, message_id] = Regex.run(~r/id=(.*?);/, cmd)
-
-        message_id = String.trim("#{message_id}")
-
-        if String.length(message_id) > 0, do: message_id, else: nil
-      else
-        nil
-      end
+    message_id = get_cmd_part_value(cmd, "id=")
 
     if is_nil(message_id) do
       Logger.error("[TMI] Unable to parse message id from cmd #{inspect(cmd)}")
     end
 
-    user_id =
-      if String.contains?(cmd, "user-id=") do
-        [_, user_id] = Regex.run(~r/user-id=(.*?);/, cmd)
-        user_id = String.trim("#{user_id}")
-
-        if String.length(user_id) > 0, do: user_id, else: nil
-      else
-        nil
-      end
+    user_id = get_cmd_part_value(cmd, "user-id=")
 
     unless user_id do
       Logger.error("[TMI] Unable to parse user id from cmd #{inspect(cmd)}")
     end
 
     %{message_id: message_id, user_id: user_id}
+  end
+
+  def get_cmd_part_value(cmd, part) do
+    ids =
+      String.split(cmd, ";")
+      |> Enum.filter(&String.starts_with?(&1, part))
+      |> Enum.map(&String.replace(&1, part, ""))
+
+    if is_list(ids) and is_binary(List.first(ids)) do
+      value =
+        ids
+        |> List.first()
+        |> String.trim()
+
+      if String.length(value) > 0, do: value, else: nil
+    else
+      nil
+    end
   end
 
   @doc """
