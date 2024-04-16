@@ -256,7 +256,7 @@ defmodule TMI do
       if String.contains?(cmd, "id=") do
         [_, message_id] = Regex.run(~r/id=(.*?);/, cmd)
 
-        message_id = String.trim(message_id)
+        message_id = String.trim("#{message_id}")
 
         if String.length(message_id) > 0, do: message_id, else: nil
       else
@@ -270,7 +270,7 @@ defmodule TMI do
     user_id =
       if String.contains?(cmd, "user-id=") do
         [_, user_id] = Regex.run(~r/user-id=(.*?);/, cmd)
-        user_id = String.trim(user_id)
+        user_id = String.trim("#{user_id}")
 
         if String.length(user_id) > 0, do: user_id, else: nil
       else
