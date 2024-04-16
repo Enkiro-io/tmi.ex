@@ -258,7 +258,7 @@ defmodule TMI do
 
         message_id = String.trim(message_id)
 
-        if String.length(message_id) < 1, do: message_id, else: nil
+        if String.length(message_id) > 0, do: message_id, else: nil
       else
         nil
       end
@@ -272,7 +272,7 @@ defmodule TMI do
         [_, user_id] = Regex.run(~r/user-id=(.*?);/, cmd)
         user_id = String.trim(user_id)
 
-        if String.length(user_id) < 1, do: user_id, else: nil
+        if String.length(user_id) > 0, do: user_id, else: nil
       else
         nil
       end
