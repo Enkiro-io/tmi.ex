@@ -224,6 +224,8 @@ defmodule TMI do
     end
   end
 
+  require Logger
+
   @doc """
   Parse a PRIVMSG message.
 
@@ -253,17 +255,26 @@ defmodule TMI do
     message_id =
       if String.contains?(cmd, "id=") do
         [_, message_id] = Regex.run(~r/id=(.*?);/, cmd)
-        message_id
+
+        message_id = String.trim(message_id)
+
+        if String.length(message_id) < 1, do: message_id, else: nil
+      else
+        nil
       end
 
-    unless message_id do
+    if is_nil(message_id) do
       Logger.error("[TMI] Unable to parse message id from cmd #{inspect(cmd)}")
     end
 
     user_id =
       if String.contains?(cmd, "user-id=") do
         [_, user_id] = Regex.run(~r/user-id=(.*?);/, cmd)
-        user_id
+        user_id = String.trim(user_id)
+
+        if String.length(user_id) < 1, do: user_id, else: nil
+      else
+        nil
       end
 
     unless user_id do
@@ -318,7 +329,10 @@ defmodule TMI do
 
   @doc false
   # TODO: Add more cases.
-  def apply_incoming_to_bot({:unrecognized, tags, %ExIRC.Message{cmd: cmd, args: [arg]}} = msg, bot) do
+  def apply_incoming_to_bot(
+        {:unrecognized, tags, %ExIRC.Message{cmd: cmd, args: [arg]}} = msg,
+        bot
+      ) do
     cond do
       String.contains?(arg, "PRIVMSG") ->
         {message, sender, channel} = parse_message(arg)
@@ -331,13 +345,18 @@ defmodule TMI do
           message ->
             %{message_id: message_id, user_id: sender_id} = parse_cmd(cmd)
 
-            apply(bot, :handle_message, [%{
-              text: message,
-              id: message_id
-            }, %{
-              name: sender,
-              id: sender_id
-            }, channel, parse_tags(tags)])
+            apply(bot, :handle_message, [
+              %{
+                text: message,
+                id: message_id
+              },
+              %{
+                name: sender,
+                id: sender_id
+              },
+              channel,
+              parse_tags(tags)
+            ])
         end
 
       String.contains?(arg, "WHISPER") ->
