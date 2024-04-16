@@ -256,11 +256,19 @@ defmodule TMI do
         message_id
       end
 
+    unless message_id do
+      Logger.error("[TMI] Unable to parse message id from cmd #{inspect(cmd)}")
+    end
+
     user_id =
       if String.contains?(cmd, "user-id=") do
         [_, user_id] = Regex.run(~r/user-id=(.*?);/, cmd)
         user_id
       end
+
+    unless user_id do
+      Logger.error("[TMI] Unable to parse user id from cmd #{inspect(cmd)}")
+    end
 
     %{message_id: message_id, user_id: user_id}
   end
