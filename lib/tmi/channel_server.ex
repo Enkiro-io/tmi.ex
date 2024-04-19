@@ -205,11 +205,14 @@ defmodule TMI.ChannelServer do
   end
 
   defp start_channel_message_server(bot, conn, channel, is_mod) do
-    {:ok, _} =
-      DynamicSupervisor.start_child(
-        message_server_supervisor(bot),
-        {MessageServer, {bot, channel, is_mod, conn}}
-      )
+    case DynamicSupervisor.start_child(
+           message_server_supervisor(bot),
+           {MessageServer, {bot, channel, is_mod, conn}}
+         ) do
+      {:ok, pid} -> {:ok, pid}
+      {:error, {:already_started, pid}} -> {:ok, pid}
+      other -> other
+    end
   end
 
   defp update_channel_message_server_mod_status(bot, channel, mod_status) do
