@@ -275,8 +275,14 @@ defmodule TMI do
   def parse_tags(tags) do
     tags
     |> String.split(";")
-    |> Enum.map(&String.split(&1, "="))
-    |> Enum.into(%{}, &List.to_tuple/1)
+    |> Enum.map(fn tag ->
+      # Split at the first "=", limit split parts to 2 to avoid issues with values containing "="
+      case String.split(tag, "=", parts: 2) do
+        [key, value] -> {key, value}
+        [key] -> {key, ""}
+      end
+    end)
+    |> Enum.into(%{})
   end
 
   # ----------------------------------------------------------------------------
@@ -306,6 +312,7 @@ defmodule TMI do
         apply(bot, :handle_whisper, [message, sender, parse_tags(tags)])
 
       true ->
+        IO.inspect(tags)
         apply(bot, :handle_unrecognized, [msg, parse_tags(tags)])
     end
   end
