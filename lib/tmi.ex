@@ -312,7 +312,6 @@ defmodule TMI do
         apply(bot, :handle_whisper, [message, sender, parse_tags(tags)])
 
       true ->
-        IO.inspect(tags)
         apply(bot, :handle_unrecognized, [msg, parse_tags(tags)])
     end
   end
